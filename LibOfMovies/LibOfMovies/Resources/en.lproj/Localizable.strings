@@ -5,3 +5,8 @@
   Created by Wojciech Kulas on 04/12/2023.
   
 */
+
+// MARK: - Main View
+
+"all_section" = "All";
+"favourites_section" = "Favourites";
