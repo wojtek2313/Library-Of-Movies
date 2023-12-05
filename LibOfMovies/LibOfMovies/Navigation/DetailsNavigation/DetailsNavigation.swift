@@ -21,7 +21,9 @@ class DetailsNavigationRouter: NavigationRouter<Movie, DetailsNavigationType> {
         switch routeID {
         case .details:
             guard let parameters = parameters else { return }
-            let viewController = DetailsViewController()
+            let persistenceManager = FavouritesCaretaker.shared
+            let viewModel = DetailsViewModel(movie: parameters, favouritesCaretaker: persistenceManager)
+            let viewController = DetailsViewController(viewModel: viewModel)
             context.navigationController?.pushViewController(viewController, animated: true)
         }
     }

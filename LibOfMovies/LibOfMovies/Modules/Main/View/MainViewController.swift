@@ -73,6 +73,11 @@ class MainViewController: UIViewController {
         setupEvents()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        collectionView.reloadData()
+    }
+    
     // MARK: - Private Methods
     
     private func setupView() {
@@ -158,4 +163,3 @@ extension MainViewController {
         }
     }
 }
-
