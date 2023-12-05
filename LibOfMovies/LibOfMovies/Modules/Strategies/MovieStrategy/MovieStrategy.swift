@@ -14,4 +14,7 @@ protocol MovieStrategy {
     
     @MainActor var thrownError: Error? { get }
     @MainActor var movies: [Movie] { get }
+    var favouriteMovies: [Movie] { get }
+    
+    @MainActor func toggleFavourites(movie: Movie)
 }

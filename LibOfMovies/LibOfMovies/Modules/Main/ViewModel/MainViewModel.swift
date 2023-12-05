@@ -7,6 +7,7 @@
 
 import Foundation
 import LibOfMoviesNetwork
+import LibOfMoviesPersistence
  
 // MARK: - Protocol Definition
 
@@ -16,6 +17,9 @@ protocol MainViewModelProtocol {
     var refreshCollection: (() -> Void)? { get set }
     
     @MainActor var movies: [Movie] { get }
+    var favouriteMovies: [Movie] { get }
+    
+    @MainActor func toggleFavourites(movie: Movie)
 }
 
 // MARK: - Class Definition
@@ -33,18 +37,41 @@ class MainViewModel: MainViewModelProtocol {
     
     // MARK: - Public Properties
     
-    @MainActor public var movies: [Movie] { movieStrategy.movies }
+    public var movies: [Movie] = [] {
+        didSet {
+            refreshCollection?()
+        }
+    }
+    public var favouriteMovies: [Movie] { movieStrategy.favouriteMovies }
     
     // MARK: - Initializers
     
-    init(networkManager: NetworkManagerProtocol) {
-        self.movieStrategy = BaseMovieStrategy(networkManager: networkManager)
+    init(networkManager: NetworkManagerProtocol, favouritesCaretaker: FavouritesCaretakerProtocol) {
+        self.movieStrategy = BaseMovieStrategy(networkManager: networkManager, favouritesCaretaker: favouritesCaretaker)
         bindArrayOfMoviesUpdates()
+        setupCollectionData()
     }
+    
+    // MARK: - Private Methods
     
     private func bindArrayOfMoviesUpdates() {
         movieStrategy.arrayOfMoviesHasBeenUpdated = { [unowned self] in
-            refreshCollection?()
+            selectedIndex?(0)
         }
+    }
+    
+    private func setupCollectionData() {
+        selectedIndex = { [unowned self] selectionIndex in
+            Task { @MainActor in
+                movies = selectionIndex == 0 ? movieStrategy.movies : favouriteMovies
+            }
+        }
+    }
+    
+    // MARK: - Public Methods
+    
+    @MainActor
+    public func toggleFavourites(movie: Movie) {
+        movieStrategy.toggleFavourites(movie: movie)
     }
 }

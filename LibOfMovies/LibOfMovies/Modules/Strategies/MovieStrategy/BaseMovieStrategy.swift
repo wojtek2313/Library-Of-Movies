@@ -7,6 +7,7 @@
 
 import Foundation
 import LibOfMoviesNetwork
+import LibOfMoviesPersistence
 
 // MARK: - Class Definition
 
@@ -18,6 +19,7 @@ class BaseMovieStrategy: MovieStrategy {
     // MARK: - Private Properties
     
     private let networkManager: NetworkManagerProtocol
+    private let favouritesCaretaker: FavouritesCaretakerProtocol
     
     // MARK: - Public Properties
     
@@ -28,11 +30,15 @@ class BaseMovieStrategy: MovieStrategy {
         }
     }
     
+    public var favouriteMovies: [Movie] {
+        favouritesCaretaker.favouriteMovies.map { $0.toModel }
+    }
+    
     // MARK: - Initializers
     
-    init(networkManager: NetworkManagerProtocol) {
+    init(networkManager: NetworkManagerProtocol, favouritesCaretaker: FavouritesCaretakerProtocol) {
         self.networkManager = networkManager
-        
+        self.favouritesCaretaker = favouritesCaretaker
         fetchNowPlaying()
     }
     
@@ -47,6 +53,18 @@ class BaseMovieStrategy: MovieStrategy {
             } catch NetworkError.couldntFetchData {
                 thrownError = NetworkError.couldntFetchData
             }
+        }
+    }
+    
+    // MARK: - Public Methods
+    
+    @MainActor
+    public func toggleFavourites(movie: Movie) {
+        let shouldBeRemoved = favouriteMovies.contains(where: { movie.id == $0.id })
+        if shouldBeRemoved {
+            favouritesCaretaker.deleteMovieFromFavourites(movie: movie.toPOCO)
+        } else {
+            favouritesCaretaker.addFavouriteMovie(movie: movie.toPOCO)
         }
     }
 }

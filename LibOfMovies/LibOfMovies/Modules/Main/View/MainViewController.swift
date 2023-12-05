@@ -22,6 +22,7 @@ class MainViewController: UIViewController {
     // MARK: - Private Properties
     
     private var viewModel: MainViewModelProtocol
+    private var router: NavigationRouter<Movie, DetailsNavigationType>
     
     // MARK: - UI
     
@@ -53,8 +54,9 @@ class MainViewController: UIViewController {
     
     // MARK: - Initializers
     
-    init(viewModel: MainViewModelProtocol) {
+    init(viewModel: MainViewModelProtocol, router: NavigationRouter<Movie, DetailsNavigationType>) {
         self.viewModel = viewModel
+        self.router = router
         super.init(nibName: nil, bundle: nil)
         setupDelegates()
     }
@@ -116,11 +118,16 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
         }
         let model = viewModel.movies[indexPath.row]
         cell.configure(with: model)
+        cell.onFavouriteTapped = { [unowned self] in
+            self.viewModel.toggleFavourites(movie: model)
+        }
+        cell.isFavourite = viewModel.favouriteMovies.contains(where: { model.id == $0.id })
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let item = viewModel.movies[indexPath.row]
+        viewModel.selectedItem?(item)
     }
 }
 
@@ -129,6 +136,7 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
 extension MainViewController {
     private func setupEvents() {
         bindRefreshCollection()
+        bindOnCellTap()
     }
 
     @objc
@@ -141,6 +149,12 @@ extension MainViewController {
     private func bindRefreshCollection() {
         viewModel.refreshCollection = { [unowned self] in
             self.collectionView.reloadData()
+        }
+    }
+    
+    private func bindOnCellTap() {
+        viewModel.selectedItem = { [unowned self] selectedItem in
+            self.router.navigate(to: .details, from: self, withParameters: selectedItem)
         }
     }
 }
