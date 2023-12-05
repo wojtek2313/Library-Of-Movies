@@ -35,6 +35,7 @@ class MainViewModel: MainViewModelProtocol {
     // MARK: - Private Properties
     
     private var movieStrategy: MovieStrategy
+    private var isFavouriteTabSelected: Bool = false
     
     // MARK: - Public Properties
     
@@ -57,6 +58,7 @@ class MainViewModel: MainViewModelProtocol {
     
     private func bindArrayOfMoviesUpdates() {
         movieStrategy.arrayOfMoviesHasBeenUpdated = { [unowned self] in
+            guard !isFavouriteTabSelected else { return }
             Task { @MainActor in
                 movies = movieStrategy.movies
             }
@@ -67,6 +69,7 @@ class MainViewModel: MainViewModelProtocol {
         selectedIndex = { [unowned self] selectionIndex in
             Task { @MainActor in
                 movies = selectionIndex == 0 ? movieStrategy.movies : favouriteMovies
+                isFavouriteTabSelected = selectionIndex != 0
             }
         }
     }
