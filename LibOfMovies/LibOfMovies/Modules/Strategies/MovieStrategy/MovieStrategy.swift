@@ -17,4 +17,5 @@ protocol MovieStrategy {
     var favouriteMovies: [Movie] { get }
     
     @MainActor func toggleFavourites(movie: Movie)
+    func updateNowPlaying()
 }

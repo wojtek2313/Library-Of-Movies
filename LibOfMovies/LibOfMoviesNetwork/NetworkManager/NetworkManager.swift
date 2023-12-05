@@ -21,7 +21,7 @@ public enum NetworkError: Error {
 public protocol NetworkManagerProtocol {
     static var shared: NetworkManager { get }
     
-    func fetchNowPlaying() async throws -> [MovieDTO]
+    func fetchNowPlaying(atPage page: Int) async throws -> [MovieDTO]
     func fetchBackdropImage(withParameter parameter: String) async throws -> UIImage
 }
 
@@ -47,9 +47,9 @@ public final actor NetworkManager: NetworkManagerProtocol {
     
     // MARK: - Public Methods
     
-    public func fetchNowPlaying() async throws -> [MovieDTO] {
+    public func fetchNowPlaying(atPage page: Int) async throws -> [MovieDTO] {
         var decodedMovies: [MovieDTO] = []
-        guard let url = urlFactory.create(.movie, withParameter: nil) else { throw NetworkError.wrongURL }
+        guard let url = urlFactory.create(.movie, withParameter: nil, atPage: page) else { throw NetworkError.wrongURL }
         do {
             let (data, _) = try await session.data(from: url)
             decoder.keyDecodingStrategy = .convertFromSnakeCase
@@ -60,7 +60,7 @@ public final actor NetworkManager: NetworkManagerProtocol {
     
     public func fetchBackdropImage(withParameter parameter: String) async throws -> UIImage {
         var backdropImage = UIImage()
-        guard let url = urlFactory.create(.image, withParameter: parameter) else { throw NetworkError.wrongURL }
+        guard let url = urlFactory.create(.image, withParameter: parameter, atPage: nil) else { throw NetworkError.wrongURL }
         do {
             let (data, _) = try await session.data(from: url)
             guard let image = UIImage(data: data) else { throw NetworkError.couldntFetchImage }

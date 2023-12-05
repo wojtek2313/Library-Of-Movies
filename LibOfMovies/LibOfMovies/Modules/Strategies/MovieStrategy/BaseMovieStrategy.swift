@@ -21,6 +21,9 @@ class BaseMovieStrategy: MovieStrategy {
     private let networkManager: NetworkManagerProtocol
     private let favouritesCaretaker: FavouritesCaretakerProtocol
     
+    private var page: Int = 1
+    private var isDownloadingData = false
+    
     // MARK: - Public Properties
     
     @MainActor public var thrownError: Error? = nil
@@ -45,13 +48,18 @@ class BaseMovieStrategy: MovieStrategy {
     // MARK: - Private Methods
     
     private func fetchNowPlaying() {
+        isDownloadingData = true
         Task { @MainActor in
             do {
-                movies = try await networkManager.fetchNowPlaying().map { $0.toModel }
+                let results = try await networkManager.fetchNowPlaying(atPage: page).map { $0.toModel }
+                movies.append(contentsOf: results)
+                isDownloadingData = false
             } catch NetworkError.wrongURL {
                 thrownError = NetworkError.wrongURL
+                isDownloadingData = false
             } catch NetworkError.couldntFetchData {
                 thrownError = NetworkError.couldntFetchData
+                isDownloadingData = false
             }
         }
     }
@@ -66,5 +74,11 @@ class BaseMovieStrategy: MovieStrategy {
         } else {
             favouritesCaretaker.addFavouriteMovie(movie: movie.toPOCO)
         }
+    }
+    
+    public func updateNowPlaying() {
+        guard !isDownloadingData else { return }
+        page += 1
+        fetchNowPlaying()
     }
 }
