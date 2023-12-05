@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import LibOfMoviesNetwork
+import LibOfMoviesPersistence
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     // MARK: - Public Properties
@@ -26,6 +28,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = scene as? UIWindowScene else { return }
         window = UIWindow(frame: windowScene.coordinateSpace.bounds)
         window?.windowScene = windowScene
+        window?.overrideUserInterfaceStyle = .light
         navigationController = UINavigationController(rootViewController: createMainViewController())
         navigationController?.isNavigationBarHidden = false
         window?.rootViewController = navigationController
@@ -33,7 +36,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
     
     private func createMainViewController() -> UIViewController {
-        let viewController = MainViewController()
+        let router = DetailsNavigationRouter()
+        let networkManager = NetworkManager.shared
+        let favouritesCaretaker = FavouritesCaretaker.shared
+        let viewModel = MainViewModel(networkManager: networkManager, favouritesCaretaker: favouritesCaretaker)
+        let viewController = MainViewController(viewModel: viewModel, router: router)
         return viewController
     }
 }
