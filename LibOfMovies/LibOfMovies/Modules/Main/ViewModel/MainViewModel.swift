@@ -20,6 +20,7 @@ protocol MainViewModelProtocol {
     var favouriteMovies: [Movie] { get }
     
     @MainActor func toggleFavourites(movie: Movie)
+    func updateNowPlaying()
 }
 
 // MARK: - Class Definition
@@ -37,7 +38,7 @@ class MainViewModel: MainViewModelProtocol {
     
     // MARK: - Public Properties
     
-    public var movies: [Movie] = [] {
+    @MainActor public var movies: [Movie] = [] {
         didSet {
             refreshCollection?()
         }
@@ -56,7 +57,9 @@ class MainViewModel: MainViewModelProtocol {
     
     private func bindArrayOfMoviesUpdates() {
         movieStrategy.arrayOfMoviesHasBeenUpdated = { [unowned self] in
-            selectedIndex?(0)
+            Task { @MainActor in
+                movies = movieStrategy.movies
+            }
         }
     }
     
@@ -73,5 +76,9 @@ class MainViewModel: MainViewModelProtocol {
     @MainActor
     public func toggleFavourites(movie: Movie) {
         movieStrategy.toggleFavourites(movie: movie)
+    }
+    
+    public func updateNowPlaying() {
+        movieStrategy.updateNowPlaying()
     }
 }

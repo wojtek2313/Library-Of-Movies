@@ -29,10 +29,13 @@ public enum ResponderType {
         }
     }
     
-    public var queryItems: [URLQueryItem] {
+    public func generateQueryItems(atPage page: Int?) -> [URLQueryItem] {
         switch self {
         case .image: return []
-        case .movie: return [URLQueryItem(name: "api_key", value: APIConstants.apiKey)]
+        case .movie: return [
+            URLQueryItem(name: "page", value: "\(page ?? 1)"),
+            URLQueryItem(name: "api_key", value: APIConstants.apiKey)
+        ]
         }
     }
     

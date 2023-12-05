@@ -134,6 +134,13 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
         let item = viewModel.movies[indexPath.row]
         viewModel.selectedItem?(item)
     }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        var collectionViewContentSizeTotal = collectionView.contentSize.height - collectionView.bounds.size.height
+        if collectionView.contentOffset.y >= collectionViewContentSizeTotal {
+            viewModel.updateNowPlaying()
+        }
+    }
 }
 
 // MARK: - Events
@@ -148,7 +155,6 @@ extension MainViewController {
     private func bindSegmentedControl(sender: UISegmentedControl) {
         let selectedIndex = sender.selectedSegmentIndex
         viewModel.selectedIndex?(selectedIndex)
-        collectionView.reloadData()
     }
 
     private func bindRefreshCollection() {
